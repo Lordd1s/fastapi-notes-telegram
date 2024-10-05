@@ -1,34 +1,27 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, DATETIME, ForeignKey, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, ForeignKey, Table
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.base import Base
 
-note_tag_association = Table(
-    'note_tag_association', Base.metadata,
-    Column('note_id', Integer, ForeignKey('notes.id')),
-    Column('tag_id', Integer, ForeignKey('tags.id')),
-)
 
-
-class Tags(Base):
-    __tablename__ = "tags"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, unique=True)
-
-    notes = relationship("Note", secondary=note_tag_association, back_populates="tags")
+class Tag(Base):
+    name: Mapped[str] = mapped_column(unique=True)
+    notes = relationship("Note", secondary="note_tag_association", back_populates="tags")
 
 
 class Note(Base):
-    __tablename__ = "todos"
+    title: Mapped[str] = mapped_column()
+    description: Mapped[str] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    last_changed_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    title = Column(String, index=True)
-    description = Column(String)
-    tags_id = relationship("Note", secondary=note_tag_association, back_pop='notes')
-    created_at = Column(DATETIME, default=datetime.now(timezone.utc), index=True)
-    last_changed_at = Column(DATETIME, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), index=True)
+    tags = relationship(Tag, secondary="note_tag_association", back_populates="notes")
 
-    tags = relationship(Tags, secondary=note_tag_association, back_populates="notes")
+
+note_tag_association = Table(
+    'note_tag_association', Base.metadata,
+    Column('note_id', Integer, ForeignKey('notes.id'), primary_key=True),
+    Column('tag_id', Integer, ForeignKey('tags.id'), primary_key=True),
+)
