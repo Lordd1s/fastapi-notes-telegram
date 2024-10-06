@@ -5,6 +5,6 @@ __all__ = (
     'Tag'
 )
 
-from app.db.base import Base
+from db.base import Base
 from .user import User
 from .note import Tag, Note

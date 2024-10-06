@@ -1,13 +1,13 @@
 from asyncio import current_task
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, async_scoped_session
-from app.core.config import settings
+from core.config import settings
 
 
 class DatabaseManager:
     def __init__(self, url: str, db_echo: bool = False):
         self.engine = create_async_engine(url, future=True, echo=db_echo)
-        self.async_session = async_sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
+        self.async_session = async_sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession, autoflush=False)
 
     def get_scoped_session(self):
         session = async_scoped_session(
